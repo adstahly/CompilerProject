@@ -7,8 +7,14 @@
 // post: tokenmap has been populated - key: lexeme, value: token
 
 LexAnalyzer::LexAnalyzer(istream& infile) {
+    string tokenName;
+    string lexemeName;
 
+    while (infile >> tokenName >> lexemeName) {
+        tokenmap.insert(make_pair(lexemeName, tokenName));
+    }
 }
+
 
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output

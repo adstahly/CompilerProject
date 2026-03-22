@@ -1,3 +1,9 @@
+/*
+* Aron Bartoszek
+ * Jesse Morales
+ * Adam Stahly
+ * Alejandro Torres
+ */
 #ifndef LEXANALYZER_H
 #define LEXANALYZER_H
 // above can also be achieved with #pragma once
