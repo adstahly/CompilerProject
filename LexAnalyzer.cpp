@@ -15,7 +15,22 @@ LexAnalyzer::LexAnalyzer(istream& infile) {
     }
 }
 
-
+bool LexAnalyzer::isSymbol(const char c) {
+    return (c == '{' || c == '}' || c == '+' || c == '-' ||
+            c == '*' || c == '<' || c == '>' || c == ';' ||
+            c == '(' || c == ')' || c == '=' || c == ':' || c == ',');
+}
+bool LexAnalyzer::isNumber(const char c) {
+    return (c >= '0' && c <= '9');
+}
+bool LexAnalyzer::isAlpha(const char c) {
+    return (c >= 'a' && c <= 'z' ) ||
+           (c >= 'A' && c <= 'Z') ||
+               c == '_';
+}
+bool LexAnalyzer::isWhitespace(const char c) {
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
+}
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output
 // file
