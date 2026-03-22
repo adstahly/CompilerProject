@@ -1,4 +1,3 @@
-
 #include "LexAnalyzer.h"
 
 // pre: parameter refers to open data file consisting of token and
@@ -15,22 +14,20 @@ LexAnalyzer::LexAnalyzer(istream& infile) {
     }
 }
 
-bool LexAnalyzer::isSymbol(const char c) {
-    return (c == '{' || c == '}' || c == '+' || c == '-' ||
-            c == '*' || c == '<' || c == '>' || c == ';' ||
-            c == '(' || c == ')' || c == '=' || c == ':' || c == ',');
-}
 bool LexAnalyzer::isNumber(const char c) {
     return (c >= '0' && c <= '9');
 }
+
 bool LexAnalyzer::isAlpha(const char c) {
-    return (c >= 'a' && c <= 'z' ) ||
+    return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
-               c == '_';
+           c == '_';
 }
+
 bool LexAnalyzer::isWhitespace(const char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 }
+
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output
 // file
@@ -39,6 +36,102 @@ bool LexAnalyzer::isWhitespace(const char c) {
 // If there is an error, the incomplete token/lexeme pairs, as well as
 // an error message have been written to the output file.
 // A success or fail message has printed to the console.
-void LexAnalyzer::scanFile(istream& infile, ostream& outfile) {
+void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
+    char c;
+    bool error = false;
+    while (infile.get(c)) {
+        if (isWhitespace(c)) {
+            continue;
+        }
 
+        if (isAlpha(c)) {
+            string buffer;
+            buffer += c;
+            while (isAlpha(infile.peek()) || isNumber(infile.peek())) {
+                infile.get(c);
+                buffer += c;
+            }
+
+            auto it = tokenmap.find(buffer);
+
+            if (it != tokenmap.end()) {
+                lexemes.push_back(it->first);
+                tokens.push_back(it->second);
+            } else {
+                lexemes.push_back(buffer);
+                tokens.emplace_back("t_id");
+            }
+        } else if (isNumber(c)) {
+            string buffer;
+            buffer += c;
+            while (isNumber(infile.peek())) {
+                infile.get(c);
+                buffer += c;
+            }
+            lexemes.push_back(buffer);
+            tokens.emplace_back("t_number");
+        } else if (c == '"') {
+            string buffer;
+            buffer += c;
+            while (infile.peek() != '"' && !infile.eof()) {
+                infile.get(c);
+                buffer += c;
+            }
+            if (infile.peek() == '"') {
+                infile.get(c);
+                buffer += c;
+                lexemes.push_back(buffer);
+                tokens.emplace_back("t_text");
+            } else {
+                error = true;
+                lexemes.push_back(buffer);
+                tokens.emplace_back("ERROR_UNCLOSED_STRING");
+            }
+        } else {
+            switch (c) {
+                case '{':
+                case '}':
+                case ';':
+                case ':':
+                case '(':
+                case ')':
+                case ',':
+                case '=':
+                case '+':
+                case '-':
+                case '*': {
+                    string s(1, c);
+                    lexemes.push_back(s);
+                    tokens.push_back(tokenmap[s]);
+                    break;
+                }
+                case '<':
+                case '>': {
+                    string s(1, c);
+
+                    if (infile.peek() == '=') {
+                        infile.get(c);
+                        s += c;
+                    }
+
+                    lexemes.push_back(s);
+                    tokens.push_back(tokenmap[s]);
+                    break;
+                }
+                default:
+                    error = true;
+                    lexemes.emplace_back(1, c);
+                    tokens.emplace_back("LEXICAL_ERROR");
+                    break;
+            }
+        }
+    }
+    for (int i = 0; i < tokens.size(); i++) {
+        outfile << tokens[i] << " : " << lexemes[i] << endl;
+    }
+    if (error) {
+        cout << "Scanning failed: Lexical errors encountered." << endl;
+    } else {
+        cout << "Scanning completed successfully." << endl;
+    }
 }

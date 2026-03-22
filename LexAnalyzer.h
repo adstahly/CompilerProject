@@ -25,7 +25,6 @@ private:
 
     // other private methods
     // the body of the public methods
-    static bool isSymbol(char c);
     static bool isAlpha(char c);
     static bool isNumber(char c);
     static bool isWhitespace(char c);
