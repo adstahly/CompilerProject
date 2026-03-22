@@ -17,3 +17,12 @@ s_colon :
 s_lparen ( 
 s_rparen ) 
 s_semi ; 
+s_lbrace {
+s_rbrace }
+s_plus +
+s_minus -
+s_mult *
+s_lt <
+s_gt >
+s_le =>
+s_ge =<
