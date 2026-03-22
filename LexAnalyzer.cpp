@@ -39,7 +39,7 @@ bool LexAnalyzer::isWhitespace(const char c) {
 void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
     char c;
     bool error = false;
-    while (infile.get(c)) {
+    while (infile.get(c) && !error) {
         if (isWhitespace(c)) {
             continue;
         }
