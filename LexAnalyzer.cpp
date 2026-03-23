@@ -37,92 +37,98 @@ bool LexAnalyzer::isWhitespace(const char c) {
 // an error message have been written to the output file.
 // A success or fail message has printed to the console.
 void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
-    char c;
+    string line;
     bool error = false;
-    while (infile.get(c) && !error) {
-        if (isWhitespace(c)) {
-            continue;
-        }
+    int lineNum = 0;
 
-        if (isAlpha(c)) {
-            string buffer;
-            buffer += c;
-            while (isAlpha(infile.peek()) || isNumber(infile.peek())) {
-                infile.get(c);
-                buffer += c;
+    while (getline(infile, line) && !error) {
+        lineNum++;
+        int n = line.length();
+
+        for (int i = 0; i < n && !error; i++) {
+            char c = line[i];
+            if (isWhitespace(c)) {
+                continue;
             }
 
-            auto it = tokenmap.find(buffer);
-
-            if (it != tokenmap.end()) {
-                lexemes.push_back(it->first);
-                tokens.push_back(it->second);
-            } else {
-                lexemes.push_back(buffer);
-                tokens.emplace_back("t_id");
-            }
-        } else if (isNumber(c)) {
-            string buffer;
-            buffer += c;
-            while (isNumber(infile.peek())) {
-                infile.get(c);
+            if (isAlpha(c)) {
+                string buffer;
                 buffer += c;
-            }
-            lexemes.push_back(buffer);
-            tokens.emplace_back("t_number");
-        } else if (c == '"') {
-            string buffer;
-            buffer += c;
-            while (infile.peek() != '"' && !infile.eof()) {
-                infile.get(c);
-                buffer += c;
-            }
-            if (infile.peek() == '"') {
-                infile.get(c);
-                buffer += c;
-                lexemes.push_back(buffer);
-                tokens.emplace_back("t_text");
-            } else {
-                error = true;
-                lexemes.push_back(buffer);
-                tokens.emplace_back("ERROR_UNCLOSED_STRING");
-            }
-        } else {
-            switch (c) {
-                case '{':
-                case '}':
-                case ';':
-                case ':':
-                case '(':
-                case ')':
-                case ',':
-                case '=':
-                case '+':
-                case '-':
-                case '*': {
-                    string s(1, c);
-                    lexemes.push_back(s);
-                    tokens.push_back(tokenmap[s]);
-                    break;
+                while (i + 1 < n && (isAlpha(line[i + 1]) || isNumber(line[i + 1]))) {
+                    i++;
+                    buffer += line[i];
                 }
-                case '<':
-                case '>': {
-                    string s(1, c);
 
-                    if (infile.peek() == '=') {
-                        infile.get(c);
-                        s += c;
-                    }
-
-                    lexemes.push_back(s);
-                    tokens.push_back(tokenmap[s]);
-                    break;
+                if (auto it = tokenmap.find(buffer); it != tokenmap.end()) {
+                    lexemes.push_back(it->first);
+                    tokens.push_back(it->second);
+                } else {
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back("t_id");
                 }
-                default:
+            } else if (isNumber(c)) {
+                string buffer;
+                buffer += c;
+                while (i + 1 < n && (isNumber(line[i + 1]))) {
+                    i++;
+                    buffer += line[i];
+                }
+                lexemes.push_back(buffer);
+                tokens.emplace_back("t_number");
+            } else if (c == '"') {
+                string buffer;
+                buffer += c;
+                while (i + 1 < n && line[i + 1] != '"') {
+                    i++;
+                    buffer += line[i];
+                }
+                if (i + 1 < n && line[i + 1] == '"') {
+                    i++;
+                    buffer += line[i];
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back("t_text");
+                } else {
                     error = true;
-                    lexemes.emplace_back(1, c);
-                    tokens.emplace_back("LEXICAL_ERROR");
-                    break;
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back("ERROR_UNCLOSED_STRING");
+                }
+            } else {
+                switch (c) {
+                    case '{':
+                    case '}':
+                    case ';':
+                    case ':':
+                    case '(':
+                    case ')':
+                    case ',':
+                    case '=':
+                    case '+':
+                    case '-':
+                    case '*': {
+                        string s(1, c);
+                        lexemes.push_back(s);
+                        tokens.push_back(tokenmap[s]);
+                        break;
+                    }
+                    case '<':
+                    case '>': {
+                        string s(1, c);
+
+                        if (i + 1 < n && line[i + 1] == '=') {
+                            i++;
+                            s += line[i];
+                        }
+
+                        lexemes.push_back(s);
+                        tokens.push_back(tokenmap[s]);
+                        break;
+                    }
+                    default:
+                        error = true;
+                        lexemes.emplace_back(1, c);
+                        tokens.emplace_back("LEXICAL_ERROR");
+                        break;
+                }
             }
         }
     }
