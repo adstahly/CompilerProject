@@ -47,7 +47,7 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
 
         for (int i = 0; i < n && !error; i++) {
             char c = line[i];
-            if (isWhitespace(c)) {
+            if (isspace(c)) {
                 continue;
             }
 
