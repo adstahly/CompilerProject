@@ -1,3 +1,9 @@
+/*
+* Aron Bartoszek
+ * Jesse Morales
+ * Adam Stahly
+ * Alejandro Torres
+ */
 #ifndef LEXANALYZER_H
 #define LEXANALYZER_H
 // above can also be achieved with #pragma once
@@ -19,6 +25,9 @@ private:
 
     // other private methods
     // the body of the public methods
+    static bool isAlpha(char c);
+    static bool isNumber(char c);
+    static bool isWhitespace(char c);
 
 public:
     LexAnalyzer(istream& infile); //not the body
