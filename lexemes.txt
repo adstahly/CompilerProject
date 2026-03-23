@@ -16,4 +16,13 @@ s_comma ,
 s_colon :
 s_lparen ( 
 s_rparen ) 
-s_semi ; 
+s_semi ;
+s_lt <
+s_le <=
+s_gt >
+s_ge >=
+s_plus +
+s_minus -
+s_mult *
+s_lbrace {
+s_rbrace }
