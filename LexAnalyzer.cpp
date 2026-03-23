@@ -133,7 +133,7 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
         }
     }
     for (int i = 0; i < tokens.size(); i++) {
-        outfile << tokens[i] << " : " << lexemes[i] << endl;
+        outfile << tokens[i] << " " << lexemes[i] << endl;
     }
     if (error) {
         cout << "Scanning failed: Lexical errors encountered." << endl;
