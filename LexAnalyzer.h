@@ -22,6 +22,12 @@ private:
 
 public:
     LexAnalyzer(istream& infile); //not the body
+    string handleText(const string &line, int &pos);
+
+    string handleNum(const string &line, int &pos);
+
+    string handleWord(const string &line, int &pos);
+
     // pre: parameter refers to open data file consisting of token and
     // lexeme pairs i.e.  t_and and
     // Each pair appears on its own input line.
