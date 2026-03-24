@@ -1,10 +1,3 @@
-#include "LexAnalyzer.h"
-
-// pre: parameter refers to open data file consisting of token and
-// lexeme pairs i.e.  t_and and
-// Each pair appears on its own input line.
-// post: tokenmap has been populated - key: lexeme, value: token
-
 LexAnalyzer::LexAnalyzer(istream& infile) {
     string tokenName;
     string lexemeName;
@@ -34,69 +27,16 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
 
         for (int i = 0; i < n && !error; i++) {
             char c = line[i];
-            if (isspace(c)) {
-                continue;
-            }
+            if (isspace(c)) {continue;}
 
             if (isalpha(c) || c == '_') {
-                string buffer;
-                buffer += c;
-                while (i + 1 < n && (isalpha(line[i + 1]) || isdigit(line[i + 1]))) {
-                    i++;
-                    buffer += line[i];
-                }
-                if (tokenmap.contains(buffer)) {
-                    lexemes.push_back(buffer);
-                    tokens.emplace_back(tokenmap[buffer]);
-                } else {
-                    lexemes.push_back(buffer);
-                    tokens.emplace_back("t_id");
-                }
+                checkIdentifier(line,i);
             } else if (isdigit(c)) {
-                string buffer;
-                buffer += c;
-                while (i + 1 < n && (isdigit(line[i + 1]))) {
-                    i++;
-                    buffer += line[i];
-                }
-                lexemes.push_back(buffer);
-                tokens.emplace_back("t_number");
+                checkNumber(line,i);
             } else if (c == '"') {
-                string buffer;
-                bool close = false;
-                while (i + 1 < n) {
-                    i++;
-                    if (line[i] == '"') {
-                        close = true;
-                        break;
-                    }
-                    buffer += line[i];
-                }
-                if (close) {
-                    lexemes.push_back(buffer);
-                    tokens.emplace_back("t_text");
-                } else {
-                    error = true;
-                    lexemes.push_back(buffer);
-                    tokens.emplace_back("ERROR_UNCLOSED_STRING");
-
-                }
+                checkText(line,i,error);
             } else {
-                string buffer;
-                buffer += c;
-                if ((c == '>' || c == '<') && i+1 < n && line[i + 1] == '=' ) {
-                    buffer += line[i + 1];
-                    i++;
-                }
-                if (tokenmap.contains(buffer)) {
-                    lexemes.push_back(buffer);
-                    tokens.emplace_back(tokenmap[buffer]);
-                }else {
-                    error = true;
-                    lexemes.push_back(buffer);
-                    tokens.emplace_back("ERROR_NO_SYMBOL_Found");
-                    break;
-                }
+                checkSymbols(line,i,error);
             }
         }
     }
@@ -108,4 +48,70 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
     } else {
         cout << "Scanning completed successfully." << endl;
     }
+}
+
+void LexAnalyzer::checkIdentifier(const string& line, int& i) {
+    string buffer;
+    buffer += line[i];
+
+    while (i +1 < line.length() && (isalpha(line[i+1]) || isdigit(line[i+1]))) {
+        i++;
+        buffer += line[i];
+    }
+    if (tokenmap.contains(buffer)) {
+        lexemes.push_back(buffer);
+        tokens.emplace_back(tokenmap[buffer]);
+    }else {
+        lexemes.push_back(buffer);
+        tokens.emplace_back("t_id");
+    }
+}
+void LexAnalyzer::checkNumber(const string& line, int& i) {
+    string buffer;
+    buffer+= line[i];
+
+    while (i+1 < line.length() && isdigit(line[i+1])) {
+        i++;
+        buffer += line[i];
+    }
+    lexemes.push_back(buffer);
+    tokens.emplace_back("t_number");
+}
+void LexAnalyzer::checkText(const string& line, int& i, bool& error) {
+    string buffer;
+    bool close = false;
+
+    while (i + 1 < line.length()) {
+        i++;
+        if (line[i] == '"') {
+            close = true;
+            break;
+        }
+        buffer += line[i];
+    }
+    if (close) {
+        lexemes.push_back(buffer);
+        tokens.emplace_back("t_text");
+    }else {
+        lexemes.push_back(buffer);
+        tokens.emplace_back("ERROR_UNCLOSED_STRING");
+        error = true;
+    }
+}
+void LexAnalyzer::checkSymbols(const string& line, int& i, bool& error) {
+    string buffer;
+    buffer += line[i];
+    if ((line[i] == '>' || line[i] == '<') && i+1 < line.size() && line[i + 1] == '=' ) {
+        buffer += line[i + 1];
+        i++;
+    }
+    if (tokenmap.contains(buffer)) {
+        lexemes.push_back(buffer);
+        tokens.emplace_back(tokenmap[buffer]);
+    }else {
+        lexemes.push_back(buffer);
+        tokens.emplace_back("ERROR_NO_SYMBOL_Found");
+        error = true;
+    }
+
 }

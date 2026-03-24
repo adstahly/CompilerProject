@@ -13,7 +13,6 @@
 #include <map>
 #include <vector>
 using namespace std;
-
 class LexAnalyzer { //add method headers
 private:
     // map to hold language's valid lexeme/token pairs
@@ -24,10 +23,13 @@ private:
     vector<string> tokens;
 
     // other private methods
-    // the body of the public methods
-    static bool isAlpha(char c);
-    static bool isNumber(char c);
-    static bool isWhitespace(char c);
+    void checkIdentifier(const string& line, int& i);
+    void checkNumber(const string& line, int& i);
+    void checkText(const string& line, int& i, bool& error);
+    void checkSymbols(const string& line, int& i, bool& error);
+
+
+
 
 public:
     LexAnalyzer(istream& infile); //not the body
