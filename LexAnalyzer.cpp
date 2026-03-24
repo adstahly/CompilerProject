@@ -28,6 +28,15 @@ bool LexAnalyzer::isWhitespace(const char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 }
 
+bool LexAnalyzer::isDelimiter(const char c) {
+    if (isspace(c)) {
+        return true;
+    }
+
+    string delimiter = "=,:;(){}-+*<>";
+    return delimiter.find(c) != string::npos;
+}
+
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output
 // file
@@ -58,6 +67,12 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                     i++;
                     buffer += line[i];
                 }
+                if (i + 1 < n && !isDelimiter(line[i + 1])) {
+                    error = true;
+                    tokens.emplace_back("ERROR: INVALID DELIMITER");
+                    lexemes.push_back(buffer + line[i + 1]);
+                    break;
+                }
 
                 if (auto it = tokenmap.find(buffer); it != tokenmap.end()) {
                     lexemes.push_back(it->first);
@@ -73,6 +88,14 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                     i++;
                     buffer += line[i];
                 }
+
+                if (i + 1 < n && !isDelimiter(line[i + 1])) {
+                    error = true;
+                    tokens.emplace_back("ERROR: INVALID DELIMITER");
+                    lexemes.push_back(buffer + line[i + 1]);
+                    break;
+                }
+
                 lexemes.push_back(buffer);
                 tokens.emplace_back("t_number");
             } else if (c == '"') {
@@ -85,6 +108,13 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                 if (i + 1 < n && line[i + 1] == '"') {
                     i++;
                     buffer += line[i];
+
+                    if (i + 1 < n && !isDelimiter(line[i + 1])) {
+                        error = true;
+                        tokens.emplace_back("ERROR: INVALID DELIMITER");
+                        lexemes.push_back(buffer + line[i + 1]);
+                        break;
+                    }
                     lexemes.push_back(buffer);
                     tokens.emplace_back("t_text");
                 } else {
