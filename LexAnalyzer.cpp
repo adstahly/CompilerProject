@@ -14,19 +14,6 @@ LexAnalyzer::LexAnalyzer(istream& infile) {
     }
 }
 
-// bool LexAnalyzer::isNumber(const char c) {
-//     return (c >= '0' && c <= '9');
-// }
-
-// bool LexAnalyzer::isAlpha(const char c) {
-//     return (c >= 'a' && c <= 'z') ||
-//            (c >= 'A' && c <= 'Z') ||
-//            c == '_';
-// }
-
-// bool LexAnalyzer::isWhitespace(const char c) {
-//     return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
-// }
 
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output
@@ -60,10 +47,10 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                 }
                 if (tokenmap.contains(buffer)) {
                     lexemes.push_back(buffer);
-                    tokens.push_back(tokenmap[buffer]);
+                    tokens.emplace_back(tokenmap[buffer]);
                 } else {
                     lexemes.push_back(buffer);
-                    tokens.push_back("t_id");
+                    tokens.emplace_back("t_id");
                 }
             } else if (isdigit(c)) {
                 string buffer;
@@ -95,47 +82,26 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
 
                 }
             } else {
-                switch (c) {
-                    case '{':
-                    case '}':
-                    case ';':
-                    case ':':
-                    case '(':
-                    case ')':
-                    case ',':
-                    case '=':
-                    case '+':
-                    case '-':
-                    case '*': {
-                        string s(1, c);
-                        lexemes.push_back(s);
-                        tokens.push_back(tokenmap[s]);
-                        break;
-                    }
-                    case '<':
-                    case '>': {
-                        string s(1, c);
-
-                        if (i + 1 < n && line[i + 1] == '=') {
-                            i++;
-                            s += line[i];
-                        }
-
-                        lexemes.push_back(s);
-                        tokens.push_back(tokenmap[s]);
-                        break;
-                    }
-                    default:
-                        error = true;
-                        lexemes.emplace_back(1, c);
-                        tokens.emplace_back("LEXICAL_ERROR");
-                        break;
+                string buffer;
+                buffer += c;
+                if ((c == '>' || c == '<') && i+1 < n && line[i + 1] == '=' ) {
+                    buffer += line[i + 1];
+                    i++;
+                }
+                if (tokenmap.contains(buffer)) {
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back(tokenmap[buffer]);
+                }else {
+                    error = true;
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back("ERROR_NO_SYMBOL_Found");
+                    break;
                 }
             }
         }
     }
     for (int i = 0; i < tokens.size(); i++) {
-        cout << tokens[i] << " " << lexemes[i] << endl;
+        outfile << tokens[i] << " " << lexemes[i] << endl;
     }
     if (error) {
         cout << "Scanning failed: Lexical errors encountered." << endl;
