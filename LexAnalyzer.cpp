@@ -29,11 +29,7 @@ bool LexAnalyzer::isWhitespace(const char c) {
 }
 
 bool LexAnalyzer::isDelimiter(const char c) {
-    if (isspace(c)) {
-        return true;
-    }
-
-    string delimiter = "=,:;(){}-+*<>";
+    string delimiter = "\t\n\r=,:;(){}-+*<>";
     return delimiter.find(c) != string::npos;
 }
 
