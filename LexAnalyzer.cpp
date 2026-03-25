@@ -1,3 +1,10 @@
+#include "LexAnalyzer.h"
+
+// pre: parameter refers to open data file consisting of token and
+// lexeme pairs i.e.  t_and and
+// Each pair appears on its own input line.
+// post: tokenmap has been populated - key: lexeme, value: token
+
 LexAnalyzer::LexAnalyzer(istream& infile) {
     string tokenName;
     string lexemeName;
@@ -7,6 +14,19 @@ LexAnalyzer::LexAnalyzer(istream& infile) {
     }
 }
 
+bool LexAnalyzer::isNumber(const char c) {
+    return (c >= '0' && c <= '9');
+}
+
+bool LexAnalyzer::isAlpha(const char c) {
+    return (c >= 'a' && c <= 'z') ||
+           (c >= 'A' && c <= 'Z') ||
+           c == '_';
+}
+
+bool LexAnalyzer::isWhitespace(const char c) {
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
+}
 
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output
@@ -27,16 +47,91 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
 
         for (int i = 0; i < n && !error; i++) {
             char c = line[i];
-            if (isspace(c)) {continue;}
+            if (isspace(c)) {
+                continue;
+            }
 
-            if (isalpha(c) || c == '_') {
-                checkIdentifier(line,i);
-            } else if (isdigit(c)) {
-                checkNumber(line,i);
+            if (isAlpha(c)) {
+                string buffer;
+                buffer += c;
+                while (i + 1 < n && (isAlpha(line[i + 1]) || isNumber(line[i + 1]))) {
+                    i++;
+                    buffer += line[i];
+                }
+
+                if (auto it = tokenmap.find(buffer); it != tokenmap.end()) {
+                    lexemes.push_back(it->first);
+                    tokens.push_back(it->second);
+                } else {
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back("t_id");
+                }
+            } else if (isNumber(c)) {
+                string buffer;
+                buffer += c;
+                while (i + 1 < n && (isNumber(line[i + 1]))) {
+                    i++;
+                    buffer += line[i];
+                }
+                lexemes.push_back(buffer);
+                tokens.emplace_back("t_number");
             } else if (c == '"') {
-                checkText(line,i,error);
+                string buffer;
+                bool close = false;
+
+                while (i + 1 < line.length()) {
+                    i++;
+                    if (line[i] == '"') {
+                        close = true;
+                        break;
+                    }
+                    buffer += line[i];
+                }
+                if (close) {
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back("t_text");
+                }else {
+                    lexemes.push_back(buffer);
+                    tokens.emplace_back("ERROR_UNCLOSED_STRING");
+                    error = true;
+                }
             } else {
-                checkSymbols(line,i,error);
+                switch (c) {
+                    case '{':
+                    case '}':
+                    case ';':
+                    case ':':
+                    case '(':
+                    case ')':
+                    case ',':
+                    case '=':
+                    case '+':
+                    case '-':
+                    case '*': {
+                        string s(1, c);
+                        lexemes.push_back(s);
+                        tokens.push_back(tokenmap[s]);
+                        break;
+                    }
+                    case '<':
+                    case '>': {
+                        string s(1, c);
+
+                        if (i + 1 < n && line[i + 1] == '=') {
+                            i++;
+                            s += line[i];
+                        }
+
+                        lexemes.push_back(s);
+                        tokens.push_back(tokenmap[s]);
+                        break;
+                    }
+                    default:
+                        error = true;
+                        lexemes.emplace_back(1, c);
+                        tokens.emplace_back("LEXICAL_ERROR");
+                        break;
+                }
             }
         }
     }
@@ -50,68 +145,3 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
     }
 }
 
-void LexAnalyzer::checkIdentifier(const string& line, int& i) {
-    string buffer;
-    buffer += line[i];
-
-    while (i +1 < line.length() && (isalpha(line[i+1]) || isdigit(line[i+1]))) {
-        i++;
-        buffer += line[i];
-    }
-    if (tokenmap.contains(buffer)) {
-        lexemes.push_back(buffer);
-        tokens.emplace_back(tokenmap[buffer]);
-    }else {
-        lexemes.push_back(buffer);
-        tokens.emplace_back("t_id");
-    }
-}
-void LexAnalyzer::checkNumber(const string& line, int& i) {
-    string buffer;
-    buffer+= line[i];
-
-    while (i+1 < line.length() && isdigit(line[i+1])) {
-        i++;
-        buffer += line[i];
-    }
-    lexemes.push_back(buffer);
-    tokens.emplace_back("t_number");
-}
-void LexAnalyzer::checkText(const string& line, int& i, bool& error) {
-    string buffer;
-    bool close = false;
-
-    while (i + 1 < line.length()) {
-        i++;
-        if (line[i] == '"') {
-            close = true;
-            break;
-        }
-        buffer += line[i];
-    }
-    if (close) {
-        lexemes.push_back(buffer);
-        tokens.emplace_back("t_text");
-    }else {
-        lexemes.push_back(buffer);
-        tokens.emplace_back("ERROR_UNCLOSED_STRING");
-        error = true;
-    }
-}
-void LexAnalyzer::checkSymbols(const string& line, int& i, bool& error) {
-    string buffer;
-    buffer += line[i];
-    if ((line[i] == '>' || line[i] == '<') && i+1 < line.size() && line[i + 1] == '=' ) {
-        buffer += line[i + 1];
-        i++;
-    }
-    if (tokenmap.contains(buffer)) {
-        lexemes.push_back(buffer);
-        tokens.emplace_back(tokenmap[buffer]);
-    }else {
-        lexemes.push_back(buffer);
-        tokens.emplace_back("ERROR_NO_SYMBOL_Found");
-        error = true;
-    }
-
-}
