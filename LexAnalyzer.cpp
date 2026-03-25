@@ -9,7 +9,13 @@ LexAnalyzer::LexAnalyzer(istream& infile) {
     }
 }
 
-
+bool LexAnalyzer::isDelimiter(const char c) {
+    if (isspace(c)) {
+        return true;
+    }
+    string s(1,c);
+    return tokenmap.contains(s);
+}
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output
 // file
@@ -33,7 +39,7 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
             if (isalpha(c)) {
                 checkIdentifier(line,i);
             } else if (isdigit(c)) {
-                checkNumber(line,i);
+                checkNumber(line,i, error);
             } else if (c == '"') {
                 checkText(infile, line,i, lineNum,error);
             } else {
@@ -67,7 +73,7 @@ void LexAnalyzer::checkIdentifier(const string& line, int& i) {
         tokens.emplace_back("t_id");
     }
 }
-void LexAnalyzer::checkNumber(const string& line, int& i) {
+void LexAnalyzer::checkNumber(const string& line, int& i, bool& error) {
     string buffer;
     buffer+= line[i];
 
@@ -75,26 +81,31 @@ void LexAnalyzer::checkNumber(const string& line, int& i) {
         i++;
         buffer += line[i];
     }
+    if (i + 1 < line.length()) {
+        char next = line[i+1];
+        if (!isDelimiter(next) && isalpha(next)) {
+            error = true;
+            tokens.emplace_back("ERROR_INVALID_DELIMITER");
+            lexemes.push_back(buffer + next);
+            i++;
+            return;
+        }
+    }
     lexemes.push_back(buffer);
     tokens.emplace_back("t_number");
 }
 void LexAnalyzer::checkText(istream& infile, string& line, int& i, int& lineNum, bool& error) {
     string buffer;
-    bool close = false;
-    while (!close && !error) {
+    while (!error) {
         while (i + 1 < line.length()) {
             i++;
             if (line[i] == '"') {
-                close = true;
-                break;
+                lexemes.push_back(buffer);
+                tokens.emplace_back("t_text");
+                return;
             }
             buffer += line[i];
         }
-
-        if (close) {
-            break;
-        }
-
         buffer += '\n';
         if (getline(infile, line)) {
             lineNum++;
@@ -103,13 +114,8 @@ void LexAnalyzer::checkText(istream& infile, string& line, int& i, int& lineNum,
             error = true;
         }
     }
-    if (close) {
-        lexemes.push_back(buffer);
-        tokens.emplace_back("t_text");
-    } else {
         lexemes.push_back(buffer);
         tokens.emplace_back("ERROR_UNCLOSED_STRING");
-    }
 }
 void LexAnalyzer::checkSymbols(const string& line, int& i, bool& error) {
     string buffer;
@@ -123,7 +129,7 @@ void LexAnalyzer::checkSymbols(const string& line, int& i, bool& error) {
         tokens.emplace_back(tokenmap[buffer]);
     }else {
         lexemes.push_back(buffer);
-        tokens.emplace_back("ERROR_NO_SYMBOL_Found");
+        tokens.emplace_back("ERROR_SYMBOL_NOT_FOUND");
         error = true;
     }
 
