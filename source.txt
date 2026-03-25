@@ -3,10 +3,9 @@ main {
   output("hello world");
 
   abc=57;
-  7658productSerialNumber
-  eeerrrrrrrrr=5*3
-  if(eeerrrrrrrrr<abc) {
-    output(eeerrrrrrrrr);
+  eeerrrrrrrrr12=5*3
+  if(eeerrrrrrrrr12<abc) {
+    output(eeerrrrrrrrr12);
   }else{
     output(abc)
   }
@@ -26,7 +25,7 @@ main {
   integer pipePressure = 200;
   vent_switch_control = false;
   evacuationAlarm = false;
-  while (pipePressure) {
+  while (pipePressure < 1000) {
       pipePressure + 1;
       if (pipePressure >= 500) {
           output("Activating pressure vent controls");

@@ -5,7 +5,7 @@
 // Each pair appears on its own input line.
 // post: tokenmap has been populated - key: lexeme, value: token
 
-LexAnalyzer::LexAnalyzer(istream& infile) {
+LexAnalyzer::LexAnalyzer(istream &infile) {
     string tokenName;
     string lexemeName;
 
@@ -29,8 +29,15 @@ bool LexAnalyzer::isWhitespace(const char c) {
 }
 
 bool LexAnalyzer::isDelimiter(const char c) {
-    string delimiter = "\t\n\r=,:;(){}-+*<> ";
-    return delimiter.find(c) != string::npos;
+    if (isWhitespace(c)) {
+        return true;
+    }
+
+    string s(1, c);
+    if (tokenmap.find(s) != tokenmap.end()) {
+        return true;
+    }
+    return false;
 }
 
 // pre: 1st parameter refers to an open text file that contains source
@@ -70,10 +77,12 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                     break;
                 }
 
-                if (auto it = tokenmap.find(buffer); it != tokenmap.end()) {
+                if (auto it = tokenmap.find(buffer); it != tokenmap.end()
+                ) {
                     lexemes.push_back(it->first);
                     tokens.push_back(it->second);
-                } else {
+                }
+                else {
                     lexemes.push_back(buffer);
                     tokens.emplace_back("t_id");
                 }
@@ -119,41 +128,19 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                     tokens.emplace_back("ERROR_UNCLOSED_STRING");
                 }
             } else {
-                switch (c) {
-                    case '{':
-                    case '}':
-                    case ';':
-                    case ':':
-                    case '(':
-                    case ')':
-                    case ',':
-                    case '=':
-                    case '+':
-                    case '-':
-                    case '*': {
-                        string s(1, c);
-                        lexemes.push_back(s);
-                        tokens.push_back(tokenmap[s]);
-                        break;
-                    }
-                    case '<':
-                    case '>': {
-                        string s(1, c);
+                string s(1, c);
 
-                        if (i + 1 < n && line[i + 1] == '=') {
-                            i++;
-                            s += line[i];
-                        }
-
-                        lexemes.push_back(s);
-                        tokens.push_back(tokenmap[s]);
-                        break;
-                    }
-                    default:
-                        error = true;
-                        lexemes.emplace_back(1, c);
-                        tokens.emplace_back("LEXICAL_ERROR");
-                        break;
+                if ((c == '<' || c == '>') && i + 1 < n && line[i + 1] == '=') {
+                    s += line[i + 1];
+                    i++;
+                }
+                if (tokenmap.count(s)) {
+                    lexemes.push_back(s);
+                    tokens.emplace_back(tokenmap[s]);
+                } else {
+                    error = true;
+                    lexemes.emplace_back(1, c);
+                    tokens.emplace_back("LEXICAL_ERROR");
                 }
             }
         }

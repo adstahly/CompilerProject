@@ -28,7 +28,7 @@ private:
     static bool isAlpha(char c);
     static bool isNumber(char c);
     static bool isWhitespace(char c);
-    static bool isDelimiter(char c);
+    bool isDelimiter(char c);
 
 public:
     LexAnalyzer(istream& infile); //not the body
