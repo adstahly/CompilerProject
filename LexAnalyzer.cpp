@@ -70,12 +70,6 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                     i++;
                     buffer += line[i];
                 }
-                if (i + 1 < n && !isDelimiter(line[i + 1])) {
-                    error = true;
-                    tokens.emplace_back("ERROR: INVALID DELIMITER");
-                    lexemes.push_back(buffer + line[i + 1]);
-                    break;
-                }
 
                 if (auto it = tokenmap.find(buffer); it != tokenmap.end()
                 ) {
@@ -94,11 +88,14 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                     buffer += line[i];
                 }
 
-                if (i + 1 < n && !isDelimiter(line[i + 1])) {
-                    error = true;
-                    tokens.emplace_back("ERROR: INVALID DELIMITER");
-                    lexemes.push_back(buffer + line[i + 1]);
-                    break;
+                if (i + 1 < n) {
+                    char next = line[i + 1];
+                    if (!isDelimiter(next) && isAlpha(next)) {
+                        error = true;
+                        tokens.emplace_back("ERROR: INVALID DELIMITER");
+                        lexemes.push_back(buffer + next);
+                        break;
+                    }
                 }
 
                 lexemes.push_back(buffer);
@@ -136,7 +133,7 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
                 }
                 if (tokenmap.count(s)) {
                     lexemes.push_back(s);
-                    tokens.emplace_back(tokenmap[s]);
+                    tokens.emplace_back(tokenmap.at(s));
                 } else {
                     error = true;
                     lexemes.emplace_back(1, c);
