@@ -30,7 +30,7 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
             char c = line[i];
             if (isspace(c)) {continue;}
 
-            if (isalpha(c) || c == '_') {
+            if (isalpha(c)) {
                 checkIdentifier(line,i);
             } else if (isdigit(c)) {
                 checkNumber(line,i);
