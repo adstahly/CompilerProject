@@ -24,5 +24,5 @@ s_minus -
 s_mult *
 s_lt <
 s_gt >
-s_le =>
-s_ge =<
+s_le <=
+s_ge >=

@@ -1,3 +1,5 @@
+#include "LexAnalyzer.h"
+
 LexAnalyzer::LexAnalyzer(istream& infile) {
     string tokenName;
     string lexemeName;
@@ -23,9 +25,8 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
 
     while (getline(infile, line) && !error) {
         lineNum++;
-        int n = line.length();
 
-        for (int i = 0; i < n && !error; i++) {
+        for (int i = 0; i < line.length() && !error; i++) {
             char c = line[i];
             if (isspace(c)) {continue;}
 
@@ -34,9 +35,9 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
             } else if (isdigit(c)) {
                 checkNumber(line,i);
             } else if (c == '"') {
-                checkText(line,i,error);
+                checkText(infile, line,i, lineNum,error);
             } else {
-                checkSymbols(line,i,error);
+                checkSymbols(line,i, error);
             }
         }
     }
@@ -54,7 +55,7 @@ void LexAnalyzer::checkIdentifier(const string& line, int& i) {
     string buffer;
     buffer += line[i];
 
-    while (i +1 < line.length() && (isalpha(line[i+1]) || isdigit(line[i+1]))) {
+    while (i +1 < line.length() && (isalnum(line[i+1]) || line[i+1] == '_')) {
         i++;
         buffer += line[i];
     }
@@ -77,25 +78,37 @@ void LexAnalyzer::checkNumber(const string& line, int& i) {
     lexemes.push_back(buffer);
     tokens.emplace_back("t_number");
 }
-void LexAnalyzer::checkText(const string& line, int& i, bool& error) {
+void LexAnalyzer::checkText(istream& infile, string& line, int& i, int& lineNum, bool& error) {
     string buffer;
     bool close = false;
+    while (!close && !error) {
+        while (i + 1 < line.length()) {
+            i++;
+            if (line[i] == '"') {
+                close = true;
+                break;
+            }
+            buffer += line[i];
+        }
 
-    while (i + 1 < line.length()) {
-        i++;
-        if (line[i] == '"') {
-            close = true;
+        if (close) {
             break;
         }
-        buffer += line[i];
+
+        buffer += '\n';
+        if (getline(infile, line)) {
+            lineNum++;
+            i = -1;
+        } else {
+            error = true;
+        }
     }
     if (close) {
         lexemes.push_back(buffer);
         tokens.emplace_back("t_text");
-    }else {
+    } else {
         lexemes.push_back(buffer);
         tokens.emplace_back("ERROR_UNCLOSED_STRING");
-        error = true;
     }
 }
 void LexAnalyzer::checkSymbols(const string& line, int& i, bool& error) {

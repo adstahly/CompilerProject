@@ -25,7 +25,7 @@ private:
     // other private methods
     void checkIdentifier(const string& line, int& i);
     void checkNumber(const string& line, int& i);
-    void checkText(const string& line, int& i, bool& error);
+    void checkText(istream &infile, string &line, int &i, int &lineNum, bool &error);
     void checkSymbols(const string& line, int& i, bool& error);
 
 
