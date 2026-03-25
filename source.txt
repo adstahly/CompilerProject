@@ -1,0 +1,42 @@
+main {
+  integer x= 5;
+  output("hello world");
+
+  abc=57;
+  7658productSerialNumber
+  eeerrrrrrrrr=5*3
+  if(eeerrrrrrrrr<abc) {
+    output(eeerrrrrrrrr);
+  }else{
+    output(abc)
+  }
+
+  integer i = 5;
+  while (i > 0) {
+      output("5 BIRTHDAY CHEERS FOR YOU!");
+      i - 1;
+  }
+  output("Blow out the candles!");
+  integer candles = 5;
+  while (candles > 0) {
+      output("poof");
+      candles - 1;
+  }
+
+  integer pipePressure = 200;
+  vent_switch_control = false;
+  evacuationAlarm = false;
+  while (pipePressure) {
+      pipePressure + 1;
+      if (pipePressure >= 500) {
+          output("Activating pressure vent controls");
+          vent_switch_control = true;
+          pipePressure - 500;
+          vent_switch_control = false;
+      }
+      if (pipePressure >= 700) {
+          output("Pressure vent failure, activating evacuation alarm!")
+          evacuationAlarm = true;
+      }
+  }
+}
