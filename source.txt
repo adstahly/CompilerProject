@@ -1,3 +1,35 @@
-main 
-  integer x= 5;
-  output(“hello world”);
+main {
+integer x = 5;
+integer y = 15;
+if (x < 15){
+    output("True");
+}
+else{
+   output("False");
+}
+
+sum = number1 + number2;
+sub = y - x;
+multi = x * y;
+
+if(sum >= x or sum <= y){
+    output("valid range");
+}
+
+while(sum > 0){
+    output("positive");
+}
+string w1 = "Jesse";
+string w2 = "Adam";
+string w3 = "alex";
+
+if(sum >= 0){
+if(y <= x){
+    output("X is super");
+}
+}
+var30 = 10;
+Var31 = 15;
+_var4 = 20;
+
+ }
