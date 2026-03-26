@@ -5,3 +5,4 @@
 .idea/vcs.xml
 CMakeLists.txt
 .idea/CompilerProject.iml
+.idea/modules.xml
