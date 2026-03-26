@@ -6,3 +6,5 @@
 CMakeLists.txt
 .idea/CompilerProject.iml
 .idea/modules.xml
+*.iml
+*.xml
