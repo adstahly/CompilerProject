@@ -9,3 +9,5 @@ CMakeLists.txt
 .idea/modules.xml
 *.iml
 *.xml
+.idea/modules.xml
+.idea/CompilerProject.cpp.iml

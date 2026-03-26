@@ -9,15 +9,6 @@ LexAnalyzer::LexAnalyzer(istream &infile) {
     }
 }
 
-bool LexAnalyzer::isDelimiter(const char c) {
-    if (isspace(c)) {
-        return true;
-    }
-    string s(1, c);
-    return tokenmap.contains(s);
-}
-
-
 
 // pre: 1st parameter refers to an open text file that contains source
 // code in the language, 2nd parameter refers to an open empty output
@@ -28,6 +19,13 @@ bool LexAnalyzer::isDelimiter(const char c) {
 // an error message have been written to the output file.
 // A success or fail message has printed to the console.
 
+bool LexAnalyzer::isDelimiter(const char c) {
+    if (isspace(c)) {
+        return true;
+    }
+    string s(1, c);
+    return tokenmap.contains(s);
+}
 
 void LexAnalyzer::checkIdentifier(const string &line, int &i) {
     string buffer;
