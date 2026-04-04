@@ -17,19 +17,13 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
 
     while (getline(infile, line) && !error) {
         lineNum++;
-
         for (int i = 0; i < line.length() && !error; i++) {
             const char c = line[i];
-            if (isspace(c)) {continue;}
-
-            if (isalpha(c) || c == '_') {
-                checkIdentifier(line,i);
-            } else if (isdigit(c)) {
-                checkNumber(line,i);
-            } else if (c == '"') {
-                checkText(infile, line,i, lineNum,error);
-            } else {
-                checkSymbols(line,i, error);
+            if (isspace(c)) {
+                continue;
+            }
+            if (isdigit(c)) {
+                checkNumber(line, i, error);
             }
         }
     }
@@ -46,7 +40,6 @@ void LexAnalyzer::scanFile(istream &infile, ostream &outfile) {
 void LexAnalyzer::checkIdentifier(const string& line, int& i) {
     string buffer;
     buffer += line[i];
-
     while (i +1 < line.length() && (isalnum(line[i+1]) || line[i+1] == '_')) {
         i++;
         buffer += line[i];
@@ -59,16 +52,24 @@ void LexAnalyzer::checkIdentifier(const string& line, int& i) {
         tokens.emplace_back("t_id");
     }
 }
-void LexAnalyzer::checkNumber(const string& line, int& i) {
-    string buffer;
-    buffer+= line[i];
 
-    while (i+1 < line.length() && isdigit(line[i+1])) {
-        i++;
-        buffer += line[i];
+void LexAnalyzer::checkNumber(const string &line, int &i, bool &error) {
+    string buffer;
+    buffer += line[i];
+    while (i + 1 < line.length() && isdigit(line[i + 1])) {
+        buffer += line[++i];
     }
-    lexemes.push_back(buffer);
-    tokens.emplace_back("t_number");
+    while (i + 1 < line.length() && !isdigit(line[i + 1]) && line[i + 1] != ';') {
+        buffer += line[++i];
+        error = true;
+    }
+    if (error) {
+        lexemes.push_back(buffer);
+        tokens.push_back("ERROR_NO_DELIMITER");
+    } else {
+        lexemes.push_back(buffer);
+        tokens.push_back("t_number");
+    }
 }
 void LexAnalyzer::checkText(istream& infile, string& line, int& i, int& lineNum, bool& error) {
     string buffer;
